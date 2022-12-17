@@ -1,6 +1,7 @@
 package edu.cu.cs6156_composite.controller;
 
 import edu.cu.cs6156_composite.controller.utils.R;
+import edu.cu.cs6156_composite.pojo.OrderProfile;
 import edu.cu.cs6156_composite.pojo.OrderProfileDetails;
 import edu.cu.cs6156_composite.service.CompositeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,4 +25,15 @@ public class OrderController {
         return new R(true, s);
     }
 
+    @DeleteMapping("/{pid}")
+    public R removeOrderProfileById(@PathVariable Integer pid) {
+        String s = compositeService.removeOrderProfileById(pid);
+        return new R(true, s);
+    }
+
+    @PutMapping
+    public R updateOrderProfile(@RequestBody OrderProfile orderProfile) {
+        String s = compositeService.updateOrderProfile(orderProfile);
+        return new R(true, s);
+    }
 }

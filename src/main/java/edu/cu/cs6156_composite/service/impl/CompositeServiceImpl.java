@@ -10,9 +10,7 @@ import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -74,6 +72,22 @@ public class CompositeServiceImpl implements CompositeService {
         String s1 = saveOrderedDish(orderedDishes);
         System.out.println("send post request to save batch orderDishes ---> " + s1);
         return s + s1;
+    }
+
+    @Override
+    public String removeOrderProfileById(Integer pid) {
+        String url = gateWayUrl + "orderProfile/" + pid;
+        String s = sendDelete(url, null);
+        return s;
+    }
+
+
+    @Override
+    public String updateOrderProfile(OrderProfile orderProfile) {
+        String url = gateWayUrl + "orderProfile";
+        String jsonString = JSON.toJSONString(orderProfile);
+        String s = sendPut(url, null, jsonString);
+        return s;
     }
 
     /**
@@ -225,7 +239,6 @@ public class CompositeServiceImpl implements CompositeService {
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
         // create post request
         HttpPost httpPost = new HttpPost(url);
-
         if (token != null) {
             httpPost.setHeader("Authorization",token);
         }
@@ -236,6 +249,83 @@ public class CompositeServiceImpl implements CompositeService {
         CloseableHttpResponse response = null;
         try {
             response = closeableHttpClient.execute(httpPost);
+            HttpEntity entity = response.getEntity();
+            String toStrRes = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+            EntityUtils.consume(entity);
+            return toStrRes;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (closeableHttpClient != null) {
+                try {
+                    closeableHttpClient.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static String sendDelete(String url, String token) {
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
+        // create post request
+        HttpDelete httpDelete = new HttpDelete(url);
+        if (token != null) {
+            httpDelete.setHeader("Authorization",token);
+        }
+        httpDelete.setHeader("Content-type", "application/json");
+        httpDelete.setHeader("DataEncoding", "UTF-8");
+        CloseableHttpResponse response = null;
+        try {
+            response = closeableHttpClient.execute(httpDelete);
+            HttpEntity entity = response.getEntity();
+            String toStrRes = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+            EntityUtils.consume(entity);
+            return toStrRes;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (closeableHttpClient != null) {
+                try {
+                    closeableHttpClient.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+    public static String sendPut(String url, String token, String jsonObj) {
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
+        // create post request
+        HttpPut httpPut = new HttpPut(url);
+        if (token != null) {
+            httpPut.setHeader("Authorization",token);
+        }
+        StringEntity jsonEntity = new StringEntity(jsonObj, Consts.UTF_8);
+        jsonEntity.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        httpPut.setEntity(jsonEntity);
+//        httpPut.setHeader("Content-type", "application/json");
+        CloseableHttpResponse response = null;
+        try {
+            response = closeableHttpClient.execute(httpPut);
             HttpEntity entity = response.getEntity();
             String toStrRes = EntityUtils.toString(entity, StandardCharsets.UTF_8);
             EntityUtils.consume(entity);
