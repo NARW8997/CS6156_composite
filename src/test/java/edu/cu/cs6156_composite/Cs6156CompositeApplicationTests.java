@@ -1,9 +1,16 @@
 package edu.cu.cs6156_composite;
 
+import edu.cu.cs6156_composite.pojo.Dish;
+import edu.cu.cs6156_composite.pojo.OrderProfileDetails;
 import edu.cu.cs6156_composite.service.impl.CompositeServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.List;
 
 @SpringBootTest
 class Cs6156CompositeApplicationTests {
@@ -11,8 +18,5 @@ class Cs6156CompositeApplicationTests {
     private CompositeServiceImpl compositeService;
     @Test
     void test02() {
-//        String token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjhjMjdkYjRkMTNmNTRlNjU3ZDI2NWI0NTExMDA4MGI0ODhlYjQzOGEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiNDMyNzAwMDcwMTY5LTdlcnVocWpkYWRjcXZtbWg4cWw1NG1pajU5dnRwZjVrLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiNDMyNzAwMDcwMTY5LTdlcnVocWpkYWRjcXZtbWg4cWw1NG1pajU5dnRwZjVrLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTE2NjI1MTU2NzIxNzI5NDUzMTk1IiwiZW1haWwiOiJyeWFuLnFpbmc4ODhAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiIzNWhNYmozOUx0QjBXX3FhUHJ3OGtRIiwibmFtZSI6IlplcWluZyBXYW5nIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FFZEZUcDVPRUtaYXNvVG9SMHktUDF5aXJiaVZjVkJQdGIzdG5LTzBJc0VuPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IlplcWluZyAiLCJmYW1pbHlfbmFtZSI6IldhbmciLCJsb2NhbGUiOiJ6aC1DTiIsImlhdCI6MTY3MTE1NDQ0NiwiZXhwIjoxNjcxMTU4MDQ2LCJqdGkiOiI0NDgwYjU1MzliMDFmN2EzYmIzNzIzZDI4Y2JiNjgzN2RjMTM0MmExIn0.RBTY3cA6ZE2vU8nyyjsxarK0xP8oi03fMajgg3N-hYIWwpKZ6z8HNySfVJM0cEn_nzmBQFFcnHhp5_B-_P8mK5GzGIOSpMiXMTUWbFQhHC7vEoqCPrzhzPn2_pPVlD0xBg5YBAZswED5fggGgWgyWQAov3l9SuReuEEgObSxunU1sb-_RrK_gZZn0rPkG56jl36QkMznvz7Z_cIk4J6thZc-ZSDOfnJzyv54Yw82Lv-fIUO48EkIMa-e-__lDBds_O3_8F27BVKURevVbtAyzAUSBaEHJG_QgER1OeEUjsKu24dkRpZ3L5dq7O-6kh_XywAU1OGRS7ntj6ksnvPLFg";
-//        OrderProfile profile = compositeService.selectByProfileId(9, token);
-//        System.out.println(profile);
     }
 }

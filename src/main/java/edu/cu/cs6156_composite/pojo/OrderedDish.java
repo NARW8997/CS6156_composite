@@ -1,5 +1,6 @@
 package edu.cu.cs6156_composite.pojo;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data

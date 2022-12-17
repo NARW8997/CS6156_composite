@@ -1,22 +1,30 @@
 package edu.cu.cs6156_composite.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson2.JSONArray;
 import edu.cu.cs6156_composite.controller.utils.R;
 import edu.cu.cs6156_composite.pojo.*;
 import edu.cu.cs6156_composite.service.CompositeService;
+import org.apache.http.Consts;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -26,12 +34,12 @@ public class CompositeServiceImpl implements CompositeService {
     private String gateWayUrl;
 
     @Override
-    public OrderProfile selectByProfileId(Integer id, String token) {
+    public OrderProfileDetails selectByProfileId(Integer id, String token) {
         String profileUrl = gateWayUrl + "orderProfile/" + id;
         String resultStr = sendGet(profileUrl, token);
         R result = JSONObject.parseObject(resultStr).toJavaObject(R.class);
         String s = result.getData().toString();
-        OrderProfile profile =  JSONObject.parseObject(s).toJavaObject(OrderProfile.class);
+        OrderProfileDetails profile =  JSONObject.parseObject(s).toJavaObject(OrderProfileDetails.class);
         Restaurant restaurant = selectRestaurantById(profile.getRestId());
         User user = selectUserById(profile.getAccountId(), token);
         List<Dish> dishes = selectAllDishByProfileId(profile.getOrderId());
@@ -41,19 +49,81 @@ public class CompositeServiceImpl implements CompositeService {
         return profile;
     }
 
+    /**
+     * save orderProfileDetails into orderProfile and orderDish respectively
+     * @param orderProfileDetails
+     * @param token
+     * @return
+     */
+    @Override
+    public String saveOrderProfileDetails(OrderProfileDetails orderProfileDetails, String token, String accountId) {
+        // set account id
+        orderProfileDetails.setAccountId(accountId);
+        // convert from orderProfileDetails to orderProfile obj
+        OrderProfile orderProfile = toOrderProfile(orderProfileDetails);
+        // send post request to create order Profile
+        String s = saveOrderProfile(orderProfile);
+        System.out.println("send post request to save orderProfile ---> " + s);
+        // get orderId
+        R r = JSON.parseObject(s, R.class);
+        Integer orderId = (Integer) r.getData();
+        // convert from dish list to orderedDishes list
+        List<Dish> dishList = orderProfileDetails.getDishList();
+        List<OrderedDish> orderedDishes = toOrderedDishes(dishList, orderId);
+        // send post request to create batch orderedDishes
+        String s1 = saveOrderedDish(orderedDishes);
+        System.out.println("send post request to save batch orderDishes ---> " + s1);
+        return s + s1;
+    }
+
+    /**
+     * save OrderProfile into Order service by calling /insert in order service
+     * @param orderProfile
+     * @return
+     */
+    public String saveOrderProfile(OrderProfile orderProfile) {
+        String url = gateWayUrl + "orderProfile";
+        String jsonStr = JSON.toJSONString(orderProfile);
+        String res = sendPostByJson(url, null, jsonStr);
+        return res;
+    }
+
+    public OrderProfile toOrderProfile(OrderProfileDetails orderProfileDetails) {
+        OrderProfile orderProfile = new OrderProfile();
+        orderProfile.setOrderTime(orderProfileDetails.getOrderTime());
+        orderProfile.setTotal(orderProfileDetails.getTotal());
+        orderProfile.setAccountId(orderProfileDetails.getAccountId());
+        orderProfile.setRestId(orderProfileDetails.getRestId());
+        return orderProfile;
+    }
+
+
+    public List<OrderedDish> toOrderedDishes(List<Dish> dishList, Integer orderId) {
+        List<OrderedDish> res = new ArrayList<>();
+        // convert from dish to orderDish
+        for (Dish dish : dishList) {
+            OrderedDish orderedDish = new OrderedDish();
+            // set order id matches the order Profile
+            orderedDish.setOrderId(orderId);
+            // set orderedDishId
+            orderedDish.setOrderedDishId(dish.getDishId());
+            res.add(orderedDish);
+        }
+        return res;
+    }
+
+    public String saveOrderedDish(Collection<OrderedDish> orderedDishCollection) {
+        String url = gateWayUrl + "orderDish/" + "batch";
+        String jsonStr = JSON.toJSONString(orderedDishCollection);
+        String res = sendPostByJson(url, null, jsonStr);
+        return res;
+    }
+
+
     public User selectUserById(String uid, String token) {
         String userUrl = gateWayUrl + "users/" + uid;
         String result = sendGet(userUrl, token);
         return JSONObject.parseObject(result).toJavaObject(User.class);
-    }
-
-    private HttpHeaders headers(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-        headers.setContentType(MediaType.valueOf("application/json"));
-        headers.set(HttpHeaders.AUTHORIZATION, token);
-        System.out.println(headers);
-        return headers;
     }
 
     public Restaurant selectRestaurantById(Integer rid) {
@@ -75,7 +145,7 @@ public class CompositeServiceImpl implements CompositeService {
         JSONArray array = (JSONArray) result.getData();
         List<OrderedDish> res = new ArrayList<>();
         for (Object orderDish : array) {
-            OrderedDish dish =  JSONObject.parseObject(orderDish.toString()).toJavaObject(OrderedDish.class);
+            OrderedDish dish = JSONObject.parseObject(orderDish.toString()).toJavaObject(OrderedDish.class);
             res.add(dish);
         }
         return res;
@@ -91,21 +161,103 @@ public class CompositeServiceImpl implements CompositeService {
         return res;
     }
 
+
     public static String sendGet(String url,String token) {
         try {
-            HttpGet HttpGet = new HttpGet(url);
-            HttpGet.setHeader("Content-type", "application/json; charset=utf-8");
+            HttpGet httpGet = new HttpGet(url);
+            httpGet.setHeader("Content-type", "application/json; charset=utf-8");
             if (token != null) {
-                HttpGet.setHeader("Authorization",token);
+                httpGet.setHeader("Authorization",token);
             }
             CloseableHttpClient httpClient = HttpClients.createDefault();
-            CloseableHttpResponse response = httpClient.execute(HttpGet);
+            CloseableHttpResponse response = httpClient.execute(httpGet);
             String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
             System.out.println(body);
             return body;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static String sendPostByEntity(String url, String token, List<NameValuePair> list) {
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
+        // create post request
+        HttpPost httpPost = new HttpPost(url);
+        // set entity for post request ---> list
+        if (list != null) {
+            UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(list, Consts.UTF_8);
+            httpPost.setEntity(formEntity);
+        }
+
+        if (token != null) {
+            httpPost.setHeader("Authorization",token);
+        }
+        CloseableHttpResponse response = null;
+        try {
+            response = closeableHttpClient.execute(httpPost);
+            HttpEntity entity = response.getEntity();
+            String toStrRes = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+            EntityUtils.consume(entity);
+            return toStrRes;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (closeableHttpClient != null) {
+                try {
+                    closeableHttpClient.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static String sendPostByJson(String url, String token, String jsonObj) {
+        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
+        // create post request
+        HttpPost httpPost = new HttpPost(url);
+
+        if (token != null) {
+            httpPost.setHeader("Authorization",token);
+        }
+        // set entity for post request ---> list
+        StringEntity jsonEntity = new StringEntity(jsonObj, Consts.UTF_8);
+        jsonEntity.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        httpPost.setEntity(jsonEntity);
+        CloseableHttpResponse response = null;
+        try {
+            response = closeableHttpClient.execute(httpPost);
+            HttpEntity entity = response.getEntity();
+            String toStrRes = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+            EntityUtils.consume(entity);
+            return toStrRes;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (closeableHttpClient != null) {
+                try {
+                    closeableHttpClient.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
  }
