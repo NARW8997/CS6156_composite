@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        #customers {
+            font-family: Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #customers td, #customers th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #customers tr:nth-child(even){background-color: #f2f2f2;}
+
+        #customers tr:hover {background-color: #ddd;}
+
+        #customers th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td {
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>CS6156 Composite Service Index Page</h1>
+    <table id="customers">
+        <tr>
+            <th>End Point</th>
+            <th>Request Type</th>
+            <th>Function</th>
+        </tr>
+        <tr>
+            <td>order/{id}</td>
+            <td>GET</td>
+            <td>get details of an order Profile</td>
+        </tr>
+        <tr>
+            <td>order/{accountId}</td>
+            <td>POST</td>
+            <td>save an order profile with batch dishes</td>
+        </tr>
+        <tr>
+            <td>order/{pid}</td>
+            <td>DELETE</td>
+            <td>delete an order profile and its dishes by an order id</td>
+        </tr>
+        <tr>
+            <td>order/</td>
+            <td>PUT</td>
+            <td>Update an order profile without dishList</td>
+        </tr>
+    </table>
+</body>
+</html>
