@@ -32,8 +32,8 @@ jobs:
     - name: Deploy to EB
       uses: einaregilsson/beanstalk-deploy@v13
       with:
-        aws_access_key: AKIA2HM3JE7PEIUF3LVU
-        aws_secret_key: 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
+        aws_access_key: 
+        aws_secret_key: 
         application_name: composite-microservice
         environment_name: Compositemicroservice-env
         version_label: ${{github.SHA}}
