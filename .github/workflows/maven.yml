@@ -38,7 +38,7 @@ jobs:
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         application_name: composite-microservice
         environment_name: Compositemicroservice-env
-        version_label: ${{github.SHA}}
+        version_label: Sample Application
         region: us-east-1
         deployment_package: deploy.zip
 
