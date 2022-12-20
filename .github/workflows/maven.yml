@@ -29,6 +29,16 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Deploy to EB
+      uses: einaregilsson/beanstalk-deploy@v13
+      with:
+        aws_access_key: 
+        aws_secret_key: 
+        application_name: composite-microservice
+        environment_name: Compositemicroservice-env
+        version_label: ${{github.SHA}}
+        region: us-east-1
+        deployment_package: target/spring-petclinic-rest-2.2.5.jar
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
