@@ -14,8 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Create ZIP deployment package
-        run: zip -r deploy_package.zip ./
+      - name: Create WAR deployment package
+        run: mvn package
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -25,15 +25,15 @@ jobs:
           aws-region: "us-east-1"
 
       - name: Upload package to S3 bucket
-        run: aws s3 cp deploy_package.zip s3://composite-bucket/
+        run: aws s3 cp target/cs6156_composite-0.0.1-SNAPSHOT.war s3://composite-bucket/
 
       - name: Create new ElasticBeanstalk Application Version
         run: |
           aws elasticbeanstalk create-application-version \
-          --application-name composite-app \
-          --source-bundle S3Bucket="composite-bucket",S3Key="deploy_package.zip" \
+          --application-name composite_application \
+          --source-bundle S3Bucket="composite-bucket",S3Key="cs6156_composite-0.0.1-SNAPSHOT.war" \
           --version-label "ver-${{ github.sha }}" \
           --description "commit-sha-${{ github.sha }}"
 
       - name: Deploy new ElasticBeanstalk Application Version
-        run: aws elasticbeanstalk update-environment --environment-name Compositeapp-env --version-label "ver-${{ github.sha }}"
+        run: aws elasticbeanstalk update-environment --environment-name Compositeapplication-env --version-label "ver-${{ github.sha }}"
